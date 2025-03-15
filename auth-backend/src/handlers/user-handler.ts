@@ -2,6 +2,7 @@ import { Request , Response } from "express";
 import { pool } from "../mysql/connection";
 import { GET_USER_BY_ID } from "../mysql/queries";
 import { INSERT_USER_STATEMENT } from "../mysql/mutation";
+import bcrypt from 'bcrypt'
 
 const getUser = async (req: Request, res: Response) => {
     try {
@@ -38,11 +39,14 @@ const createUser = async (req: Request, res: Response) => {
         if(!name || !email || !password){
             return res.status(422).json({message:"Missing data"})
         } 
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
         
 
         // Connect to the database
         const connection = await pool.getConnection();
-        const result = await connection.query(INSERT_USER_STATEMENT, [name, email, password]); 
+        const result = await connection.query(INSERT_USER_STATEMENT, [name, email, hashedPassword]); 
         console.log("user inserted", result[0]);
         
 
